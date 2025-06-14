@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>explore</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'IBM Plex Mono', monospace;
+      background-color: #fff;
+      color: #000;
+      cursor: auto;
+      overflow: hidden;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid #000;
+      font-size: 14px;
+      background: #fff;
+      z-index: 12000; 
+      will-change: transform;
+      transform: translateZ(0);
+    }
+
+    .topbar.hidden {
+      display: none; 
+    }
+
+    .topbar div {
+      cursor: pointer;
+    }
+
+    .wrapper {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    aside, .rightbar {
+      width: 320px;
+      padding: 80px 24px 40px;
+      font-size: 14px;
+      line-height: 1.6;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      overflow-y: auto;
+      background: #fff;
+      z-index: 900;
+      will-change: transform;
+      transform: translateZ(0);
+    }
+
+    aside {
+      left: 0;
+    }
+
+    .rightbar {
+      right: 0;
+    }
+
+    .main {
+      margin: 0 320px;
+      width: calc(100% - 640px);
+      min-height: 100vh;
+      overflow-y: auto;
+      padding-top: 100px;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+      z-index: 800;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 40px 24px 48px;
+    }
+
+    .hero h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin-bottom: 32px;
+    }
+
+    .hero img {
+      width: 100%;
+      height: auto;
+      margin-bottom: 4px;
+    }
+
+    .hero h2 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-top: 4px;
+      margin-bottom: 16px;
+    }
+
+    .project-block {
+      max-width: 720px;
+      margin: 0 auto 32px;
+      text-align: left;
+    }
+
+    .hero p {
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    h1, h2, h3 {
+      font-weight: 600;
+    }
+
+    .section {
+      margin-top: 40px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #000;
+      padding-bottom: 6px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #000;
+      border-radius: 24px;
+      padding: 8px 20px;
+      margin-top: 12px;
+      font-size: 14px;
+      text-decoration: none;
+      color: #000;
+    }
+
+    .cookie-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #fff;
+      border-top: 1px solid #000;
+      font-size: 13px;
+      padding: 16px 24px;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+      will-change: transform;
+      transform: translateZ(0);
+    }
+
+    .cookie-banner .close-btn {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      color: #000;
+      margin-left: 24px;
+    }
+
+    ul li {
+      border-bottom: 1px solid #000;
+      padding: 6px 0;
+      list-style: none;
+    }
+
+    .pixel-line {
+      position: fixed;
+      width: 4px;
+      height: 4px;
+      background: #000;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 1;
+      animation: fadeOut 0.5s ease forwards;
+      will-change: opacity;
+      transform: translateZ(0);
+    }
+
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    a:hover ~ .pixel-line,
+    .button:hover ~ .pixel-line,
+    .close-btn:hover ~ .pixel-line {
+      background: #444;
+      width: 6px;
+      height: 6px;
+    }
+
+   
+    #loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      z-index: 10000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 0.5s ease;
+    }
+
+    #loading-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .terminal-text {
+      position: fixed;
+      top: 20px;
+      left: 24px;
+      color: #000;
+      font-size: 14px;
+      white-space: pre-wrap;
+      text-align: left;
+    }
+
+    .terminal-text::after {
+      content: '_';
+      display: inline-block;
+      animation: blink 0.7s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .percentage-text {
+      font-size: 24px;
+      font-weight: 600;
+      color: #000;
+    }
+
+    
+    #menu-overlay, #contact-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      z-index: 11000;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+      font-weight: 500;
+      color: #000;
+    }
+
+    #menu-overlay.active, #contact-overlay.active {
+      display: flex;
+    }
+
+    #menu-overlay ul, #contact-overlay ul {
+      list-style: none;
+      text-align: center;
+    }
+
+    #menu-overlay li, #contact-overlay li {
+      margin: 16px 0;
+      border-bottom: none;
+    }
+
+    #menu-overlay a, #contact-overlay a {
+      color: #000;
+      text-decoration: none;
+    }
+
+    #menu-overlay a:hover, #contact-overlay a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      html, body {
+        overflow: auto;
+      }
+
+      .wrapper {
+        display: block;
+        height: auto;
+        overflow: visible;
+      }
+
+      aside, .rightbar {
+        position: relative;
+        width: 100%;
+        padding: 80px 24px 24px;
+      }
+
+      .main {
+        margin: 0;
+        width: 100%;
+        min-height: calc(100vh - 80px);
+        overflow-y: auto;
+        padding: 80px 24px 24px;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .hero {
+        padding: 24px;
+      }
+
+      .hero img {
+        margin-bottom: 2px;
+      }
+
+      .hero h2 {
+        font-size: 18px;
+        margin-top: 2px;
+        margin-bottom: 12px;
+      }
+
+      .project-block {
+        max-width: 720px;
+        margin: 0 auto 24px;
+        text-align: left;
+      }
+
+      .section-title {
+        text-align: left;
+      }
+
+      .pixel-line {
+        display: none;
+      }
+
+      .topbar {
+        padding: 16px 24px;
+      }
+
+      .cookie-banner {
+        padding: 12px 24px;
+        font-size: 12px;
+      }
+
+      .terminal-text {
+        top: 16px;
+        left: 16px;
+        font-size: 12px;
+      }
+
+      .percentage-text {
+        font-size: 20px;
+      }
+
+      #menu-overlay, #contact-overlay {
+        font-size: 16px;
+      }
+
+      #menu-overlay li, #contact-overlay li {
+        margin: 12px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-screen">
+    <div class="terminal-text"></div>
+    <div class="percentage-text">0%</div>
+  </div>
+
+  <div class="topbar hidden">
+    <div id="menu-btn">Menu</div>
+    <div id="contact-btn">Contact</div>
+  </div>
+
+  <div id="menu-overlay">
+    <ul>
+      <li><a href="#">Home</a></li>
+      <li><a href="#">Projects</a></li>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+  </div>
+
+  <div id="contact-overlay">
+    <ul>
+      <li><a href="mailto:aa4444contact@gmail.com">Email</a></li>
+      <li><a href="https://github.com/AA-4444">GitHub</a></li>
+      <li><a href="linkedin.com/in/alex-zarytskyi-7b2248193">LinkedIn</a></li>
+    </ul>
+  </div>
+
+  <div class="wrapper">
+    <aside>
+      <h1 style="font-size: 28px; margin-bottom: 20px">Oleksii<br>Zarytskyi</h1>
+      <p style="font-weight: 600; font-size: 14px; margin-bottom: 12px;">Software Developer</p>
+      <p style="font-size: 12px; color: #444; margin-bottom: 20px; line-height: 1.6">Developing iOS applications and websites tailored to client needs. With focus on design and usability. In free time, I build projects to explore new ways of creating apps.</p>
+      <a href="#" class="button">About →</a>
+
+      <div class="section">
+        <div class="section-title">Career</div>
+        <ul>
+          <li>Student of Software Engineering</li>
+          <li>Junior iOS Developer</li>
+          <li>Co-founder of Tech Development Company</li>
+          <li>iOS Developer in Tech Startup</li>
+        </ul>
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="hero">
+        <h1>Doing Something in Digital World</h1>
+        <div class="project-block">
+          <img src="images/1.png" alt="Previous Personal Website" />
+          <h2>Previous Personal Website</h2>
+        </div>
+        <div class="project-block">
+          <img src="images/2.png" alt="Something Happening Here" />
+          <h2>Something Happening Here</h2>
+        </div>
+        <div class="project-block">
+          <img src="images/3.png" alt="MacStats" />
+          <h2>MacStats</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="rightbar">
+      <div class="section">
+        <div class="section-title">Projects</div>
+        <ul>
+          <li>Development Company Website</li>
+          <li>SpeedTrace iOS App</li>
+          <li>MacStats</li>
+          <li>Previous Website</li>
+          <li>Neo-Brutalism</li>
+          <li>Crypto App iOS</li>
+          <li>Plant App iOS</li>
+        </ul>
+        <a href="#" class="button">More →</a>
+
+        <div class="section">
+          <div class="section-title">Provision</div>
+          <p>Bringing your ideas to life</p>
+          <p>Branding</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cookie-banner">
+    <span>Use of Cookies – This website uses cookies. By using the site you are agreeing to our <a href="#">Privacy Policy</a>.</span>
+    <span class="close-btn" onclick="this.parentElement.style.display='none'">Close</span>
+  </div>
+
+  <script>
+    // Loading Screen...
+    const loadingScreen = document.getElementById('loading-screen');
+    const terminalText = document.querySelector('.terminal-text');
+    const percentageText = document.querySelector('.percentage-text');
+    const topbar = document.querySelector('.topbar');
+
+    const terminalMessages = [
+      'Initializing system...',
+      'Loading assets...',
+      'Connecting to server...',
+      'Finalizing setup...',
+    ];
+    let messageIndex = 0;
+
+    function updateTerminal() {
+      if (messageIndex < terminalMessages.length) {
+        terminalText.textContent += terminalMessages[messageIndex] + '\n';
+        messageIndex++;
+        setTimeout(updateTerminal, 600);
+      }
+    }
+    updateTerminal();
+
+    let percentage = 0;
+    const duration = 3000;
+    const startTime = performance.now();
+
+    function updatePercentage(timestamp) {
+      const elapsed = timestamp - startTime;
+      percentage = Math.min((elapsed / duration) * 100, 100);
+      percentageText.textContent = `${Math.floor(percentage)}%`;
+
+      if (percentage < 100) {
+        requestAnimationFrame(updatePercentage);
+      } else {
+        loadingScreen.classList.add('hidden');
+        setTimeout(() => {
+          loadingScreen.style.display = 'none';
+          topbar.classList.remove('hidden'); 
+        }, 500);
+      }
+    }
+    requestAnimationFrame(updatePercentage);
+
+    // Menu and Contact Overlay...
+    const menuBtn = document.getElementById('menu-btn');
+    const contactBtn = document.getElementById('contact-btn');
+    const menuOverlay = document.getElementById('menu-overlay');
+    const contactOverlay = document.getElementById('contact-overlay');
+
+    menuBtn.addEventListener('click', () => {
+      if (menuOverlay.classList.contains('active')) {
+        menuOverlay.classList.remove('active');
+        menuBtn.textContent = 'Menu';
+      } else {
+        menuOverlay.classList.add('active');
+        contactOverlay.classList.remove('active');
+        menuBtn.textContent = 'Close';
+        contactBtn.textContent = 'Contact';
+      }
+    });
+
+    contactBtn.addEventListener('click', () => {
+      if (contactOverlay.classList.contains('active')) {
+        contactOverlay.classList.remove('active');
+        contactBtn.textContent = 'Contact';
+      } else {
+        contactOverlay.classList.add('active');
+        menuOverlay.classList.remove('active');
+        contactBtn.textContent = 'Close';
+        menuBtn.textContent = 'Menu';
+      }
+    });
+
+    // Pixel line trail 
+    let lastX = 0;
+    let lastY = 0;
+    let lastTrailTime = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      const now = Date.now();
+      if (now - lastTrailTime < 10) return;
+      lastTrailTime = now;
+
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const steps = Math.max(1, Math.floor(distance * 2));
+
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const x = Math.round(lastX + dx * t) - 2;
+        const y = Math.round(lastY + dy * t) - 2;
+
+        const pixel = document.createElement('div');
+        pixel.className = 'pixel-line';
+        pixel.style.left = `${x}px`;
+        pixel.style.top = `${y}px`;
+        document.body.appendChild(pixel);
+
+        setTimeout(() => {
+          pixel.remove();
+        }, 500);
+      }
+
+      lastX = e.clientX;
+      lastY = e.clientY;
+    });
+  </script>
+</body>
+</html>
