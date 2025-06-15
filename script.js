@@ -87,9 +87,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Pixel line trail 
+const canvas = document.getElementById('trailCanvas');
+  const ctx = canvas.getContext('2d');
+
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+  canvas.width = width;
+  canvas.height = height;
+
+  window.addEventListener('resize', () => {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+  });
+
   let lastX = 0;
   let lastY = 0;
   let lastTrailTime = 0;
+
+  const trail = [];
 
   document.addEventListener('mousemove', (e) => {
     const now = Date.now();
@@ -103,21 +120,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     for (let i = 0; i <= steps; i++) {
       const t = i / steps;
-      const x = Math.round(lastX + dx * t) - 2;
-      const y = Math.round(lastY + dy * t) - 2;
-
-      const pixel = document.createElement('div');
-      pixel.className = 'pixel-line';
-      pixel.style.left = `${x}px`;
-      pixel.style.top = `${y}px`;
-      document.body.appendChild(pixel);
-
-      setTimeout(() => {
-        pixel.remove();
-      }, 500);
+      const x = Math.round(lastX + dx * t);
+      const y = Math.round(lastY + dy * t);
+      trail.push({ x, y, time: now });
     }
 
     lastX = e.clientX;
     lastY = e.clientY;
   });
+
+  function animate() {
+    const now = Date.now();
+
+    ctx.clearRect(0, 0, width, height);
+
+    // Draw trail
+    for (let i = 0; i < trail.length; i++) {
+      const age = now - trail[i].time;
+      if (age > 100) {
+        trail.splice(i, 1);
+        i--;
+        continue;
+      }
+      const alpha = 1 - age / 100;
+      ctx.fillStyle = `rgba(0, 0, 0, ${alpha*0.7})`;
+      ctx.beginPath();
+      ctx.arc(trail[i].x, trail[i].y, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
 });
